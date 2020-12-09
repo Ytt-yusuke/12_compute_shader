@@ -330,6 +330,9 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: 1d58227d2a626eb4c99cdebb88207a0d, type: 3}
   mainTexture: {fileID: 10912, guid: 0000000000000000f000000000000000, type: 0}
   computeShader: {fileID: 7200000, guid: 8481a6e4c85b0324891a9cc2c6187dbb, type: 3}
+  range_X: 1
+  range_Y: 1
+  initTime: 10
 --- !u!4 &1275353225
 Transform:
   m_ObjectHideFlags: 0

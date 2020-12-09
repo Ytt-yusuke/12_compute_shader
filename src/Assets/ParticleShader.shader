@@ -24,6 +24,7 @@
                 float3 pos;
                 float3 vel;
                 float3 color;
+                float time;
             };
 
             struct v2g
@@ -42,10 +43,11 @@
             sampler2D _MainTex;
             float4 _MainTex_ST;
             uniform StructuredBuffer<Particle>    particles;
+            uniform StructuredBuffer<uint>    visibles;
 
             v2g vert (uint id : SV_VertexID)
             {
-                Particle p = particles[id];
+                Particle p = particles[visibles[id]];
                 v2g o;
                 o.pos = float4(UnityObjectToViewPos(p.pos),1);
                 o.color = p.color;

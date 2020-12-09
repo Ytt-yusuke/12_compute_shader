@@ -8,11 +8,18 @@ struct Particle
     float3 pos;
     float3 vel;
     float3 color;
+    float time;
 };
 
 // 変数定義
 RWStructuredBuffer<Particle> Particles;
 float deltaTime;
+
+AppendStructuredBuffer<uint> Visibles;
+float4x4 mVP;
+float range_X;
+float range_Y;
+float initTime;
 
 // 便利関数
 float rand(float2 st)
@@ -45,6 +52,7 @@ void init(uint id)
     p.vel.y = 5 * r3.x * sin(r3.z * 0.5 * 3.1415) + 5.0;
 
     p.color = rand3(seed);
+    p.time = 0.0f;
 
     Particles[id] = p;
 }
@@ -63,13 +71,41 @@ void initialize(uint id : SV_DispatchThreadID)
 void update(uint id : SV_DispatchThreadID)
 {
     Particle p = Particles[id];
+    p.time += deltaTime;
 
     if (p.pos.y < -10) {// 下に行きすぎたらリセット
         init(id);
-    }else{
+    }
+    else if (p.time >= initTime 
+            && -0.1 < p.pos.y && p.pos.y < 0.1 
+            && -5.0 < p.pos.x && p.pos.x < 5.0
+            && -5.0 < p.pos.z && p.pos.z < 5.0)
+    {
+        init(id);
+    }
+    else
+    {
         // 陽オイラー
+        float y = p.pos.y;
         p.pos += p.vel * deltaTime;
         p.vel.y -=  9.8 * deltaTime;
+
+        if (0.0 < y && p.pos.y < 0.0 &&
+           -5.0 < p.pos.x && p.pos.x < 5.0 &&
+           -5.0 < p.pos.z && p.pos.z < 5.0)
+        {
+            p.vel.y = -0.7 * p.vel.y;
+        }
+
+        //カリング
+        float4 screen_pos = mul(mVP, float4(p.pos, 1.0));
+
+        if (-range_X <= screen_pos.x / screen_pos.w && screen_pos.x / screen_pos.w < range_X
+         && -range_Y <= screen_pos.y / screen_pos.w && screen_pos.y / screen_pos.w < range_Y
+         &&    0.0 <= screen_pos.z / screen_pos.w && screen_pos.z / screen_pos.w < 1.0)
+        {
+            Visibles.Append(id);
+        }
 
         // 値の格納
         Particles[id] = p;
